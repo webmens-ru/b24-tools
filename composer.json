@@ -1,0 +1,36 @@
+{
+    "name": "webmens-ru/b24-tools",
+    "description": "",
+    "keywords": [
+        "yii2",
+        "extension",
+        "bitrix24"
+    ],
+    "homepage": "https://webmens.ru",
+    "type": "yii2-extension",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "WebMens",
+            "email": "dev@webmens.ru",
+            "homepage": "https://webmens.ru/"
+        }
+    ],
+    "require": {        
+    },
+    "autoload": {
+        "psr-4": {
+            "webmensru\\b24tools\\": "src"
+        }
+    },
+    "suggest": {
+        
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
+
+
