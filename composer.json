@@ -13,7 +13,7 @@
         {
             "name": "WebMens",
             "email": "dev@webmens.ru",
-            "homepage": "https://webmens.ru/"
+            "homepage": "https://webmens.ru"
         }
     ],
     "require": { 
