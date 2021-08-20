@@ -21,7 +21,7 @@
     },
     "autoload": {
         "psr-4": {
-            "webmensru\\b24tools\\": "src"
+            "webmens-ru\\b24-tools": "src/"
         }
     },
     "suggest": {
