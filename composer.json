@@ -23,14 +23,6 @@
         "psr-4": {
             "webmens-ru\\b24-tools\\": "src/"
         }
-    },
-    "suggest": {
-        
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.0.x-dev"
-        }
     }
 }
 
