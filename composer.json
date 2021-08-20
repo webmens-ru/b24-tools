@@ -1,13 +1,6 @@
 {
     "name": "webmens-ru/b24-tools",
     "description": "",
-    "keywords": [
-        "yii2",
-        "extension",
-        "bitrix24"
-    ],
-    "homepage": "https://webmens.ru",
-    "type": "yii2-extension",
     "license": "BSD-3-Clause",
     "authors": [
         {
