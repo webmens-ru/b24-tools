@@ -1,6 +1,6 @@
 <?php
 
-namespace webmensru\b24tools;
+namespace wm\b24tools;
 
 use yii\base\BaseObject;
 use Yii;

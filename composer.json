@@ -1,7 +1,8 @@
 {
     "name": "webmens-ru/b24-tools",
     "description": "",
-    "license": "BSD-3-Clause",
+    "license": "MIT",
+    "type": "yii2-extension",
     "authors": [
         {
             "name": "WebMens",
@@ -12,9 +13,12 @@
     "require": { 
         "yiisoft/yii2": "~2.0"
     },
+    "extra": {
+        "bootstrap": "wm\\b24tools\\Bootstrap"
+    },
     "autoload": {
         "psr-4": {
-            "webmens-ru\\b24-tools\\": "src/"
+            "wm\\b24tools\\": "src/"
         }
     }
 }
