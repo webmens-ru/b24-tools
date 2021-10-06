@@ -2,10 +2,13 @@
 
 namespace wm\b24tools;
 
+use wm\admin\models\B24ConnectSettings;
 use yii\base\BaseObject;
 use Yii;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use yii\helpers\ArrayHelper;
+use yii\web\HttpException;
 
 /**
  * Description of b24connector
@@ -15,23 +18,44 @@ use Monolog\Handler\StreamHandler;
 class b24Tools extends \yii\base\BaseObject {
 
     /**
-    * Max calls in one batch
-    */
-    public  const MAX_BATCH_CALLS = 50;
+     * @var
+     */
     private $b24PortalTable;
+    /**
+     * @var
+     */
     private $arAccessParams;
+    /**
+     * @var string
+     */
     private $b24_error = '';
+    /**
+     * @var
+     */
     private $arB24App;
+    /**
+     * @var
+     */
     private $arScope;
+    /**
+     * @var
+     */
     private $applicationId;
+    /**
+     * @var
+     */
     private $applicationSecret;
 
-    /** 
-    * Получение данные аутентификации из БД
-    * Выполняет комманду выбора записи из таблицы b24PortalTable
-    * @param string $domain Название портала
-    * @return Запись из сущности, и false, если ничего не выбрано
-    */
+//    public function __construct($config = array()) {
+//        $this->b24PortalTable = Yii::$app->params['b24PortalTable'];
+//        parent::__construct($config);
+//    }
+
+    /**
+     * @param $domain
+     * @return array|false|\yii\db\DataReader
+     * @throws \yii\db\Exception
+     */
     private function getAuthFromDB($domain) {
         $res = Yii::$app->db
                 ->createCommand("SELECT * FROM " . $this->b24PortalTable . " WHERE PORTAL = '" . $domain . "'")
@@ -40,12 +64,11 @@ class b24Tools extends \yii\base\BaseObject {
     }
 
     /**
-    * Добавление данных аутентификации из БД
-    * Вставляет записи в таблицу с токенами
-    * @param string $tableName Название сущности
-    * @param array $auth Массив данных аутентификации
-    * @return Количество строк, которые были вставлены
-    */
+     * @param $tableName
+     * @param $auth
+     * @return int
+     * @throws \yii\db\Exception
+     */
     public function addAuthToDB($tableName, $auth) {
         $res = Yii::$app->db
                 ->createCommand()
@@ -61,17 +84,16 @@ class b24Tools extends \yii\base\BaseObject {
         return $res;
     }
 
-    /** 
-    * Обновление данных аутентификации в БД
-    * Выполняет комманду обновления данных аутентификации в таблицу с токенами
-    * @param array $auth Массив данных аутентификации
-    * @return Количество строк, которые были обновлены
-    */
+    /**
+     * @param $auth
+     * @return int
+     * @throws \yii\db\Exception
+     */
     public function updateAuthToDB($auth) {
         if ($this->b24PortalTable) {
             $res = Yii::$app->db
-                    ->createCommand() 
-                    ->update($this->b24PortalTable, [ 
+                    ->createCommand()
+                    ->update($this->b24PortalTable, [
                         'ACCESS_TOKEN' => $auth['access_token'],
                         'REFRESH_TOKEN' => $auth['refresh_token'],
                         'DATE' => date("Y-m-d"),
@@ -83,12 +105,10 @@ class b24Tools extends \yii\base\BaseObject {
         }
     }
 
-    /** 
-    * Перенос данных из БД в массив
-    * Переносит данные из БД в массив по определённым ключам
-    * @param array $arAccessParams Ассоциативный массив, из которого будем переносить
-    * @return Ассоциативный массив данных, в которых наименование ключей приведены к нижнему регистру
-    */
+    /**
+     * @param $arAccessParams
+     * @return array
+     */
     private function prepareFromDB($arAccessParams) {
         $arResult = array();
         $arResult['domain'] = $arAccessParams['PORTAL'];
@@ -98,12 +118,10 @@ class b24Tools extends \yii\base\BaseObject {
         return $arResult;
     }
 
-    /** 
-    * Подготовка для AJAX запроса
-    * Перенос токенов из ассоциативного массива в поле класса
-    * @param  array $arRequest Ассоциативный массив токенов
-    * @return Перенесённый ассоциативный массив токенов
-    */
+    /**
+     * @param $arRequest
+     * @return array
+     */
     public function prepareFromAjaxRequest($arRequest) {
         $arResult = array();
         $arResult['domain'] = $arRequest['domain'];
@@ -114,12 +132,10 @@ class b24Tools extends \yii\base\BaseObject {
         return $arResult;
     }
 
-    /** 
-    * Подготовка для запроса хендлера
-    * Перенос токенов из ассоциативного массива в поле класса
-    * @param array $arRequest Ассоциативный массив токенов
-    * @return Перенесённый ассоциативный массив токенов
-    */
+    /**
+     * @param $arRequest
+     * @return array
+     */
     public function prepareFromHandlerRequest($arRequest) {
         $arResult = array();
         $arResult['domain'] = $arRequest['domain'];
@@ -130,15 +146,13 @@ class b24Tools extends \yii\base\BaseObject {
         return $arResult;
     }
 
-    /** 
-    * Подготовка для запроса
-    * Перенос токенов из ассоциативного массива в поле класса с проверкой на существование POST или GET запроса
-    * @param array $arRequestPost POST-запрос массива токенов (может быть не задан)
-    * @param array $arRequestGet GET-запрос массива токенов (может быть не задан)
-    * @return Перенесённый ассоциативный массив токенов
-    */
+    /**
+     * @param null $arRequestPost
+     * @param null $arRequestGet
+     * @return array
+     */
     public function prepareFromRequest($arRequestPost = null, $arRequestGet = null) {
-        if (!$arRequestPost or !$arRequestGet) {
+        if (!$arRequestPost or ! $arRequestGet) {
             return array();
         }
         $arResult = array();
@@ -150,12 +164,11 @@ class b24Tools extends \yii\base\BaseObject {
         return $arResult;
     }
 
-    /** 
-    * Проверка аутентификации с битриксом
-    * Проверяет токены и обновляет, если токен устаревший
-    * @param array $arScope массив области действия приложения (может быть не задан)
-    * @return Логическая переменная, соответствующая наличию или отстутствию ошибок при проверке подключения
-    */
+    /**
+     * @param array $arScope
+     * @return bool
+     * @throws \yii\db\Exception
+     */
     public function checkB24Auth($arScope = array()) {
 
         if (!is_array($arScope)) {
@@ -165,24 +178,27 @@ class b24Tools extends \yii\base\BaseObject {
             $arScope[] = 'user';
         }
 
+        // проверяем актуальность доступа
         $isTokenRefreshed = false;
 
-        $this->arB24App = $this->getBitrix24($this->arAccessParams, $isTokenRefreshed, $this->b24_error, $arScope); 
+        // $arAccessParams['access_token'] = '123';
+        // $arAccessParams['refresh_token'] = '333';
+        $this->arB24App = $this->getBitrix24($this->arAccessParams, $isTokenRefreshed, $this->b24_error, $arScope);
         if ($isTokenRefreshed and $this->b24PortalTable) {
             $this->updateAuthToDB($this->arAccessParams);
         }
         return $this->b24_error === true;
     }
 
-    /** 
-    * Устанавливает все данные из битрикса
-    * Проверяет токены и обновляет, если токен устаревший, а также создаёт логи
-    * @param array &$arAccessData массив токенов для приложения
-    * @param bool &$btokenRefreshed информация об обновление токенов
-    * @param \Exception &$errorMessage Объект сообщения об ошбке для последующего вывода в логи
-    * @param array $arScope массив области действия приложения (может быть не задан)
-    * @return Объект Bitrix24 из bitrix24-php-sdk
-    */
+    /**
+     * @param $arAccessData
+     * @param $btokenRefreshed
+     * @param $errorMessage
+     * @param array $arScope
+     * @return \Bitrix24\Bitrix24
+     * @throws \Bitrix24\Exceptions\Bitrix24Exception
+     * @throws \yii\db\Exception
+     */
     private function getBitrix24(&$arAccessData, &$btokenRefreshed, &$errorMessage, $arScope = array()) {
         $log = new Logger('bitrix24');
         $log->pushHandler(new StreamHandler('log/b24/' . date('Y_m_d') . '.log', Logger::DEBUG));
@@ -209,14 +225,21 @@ class b24Tools extends \yii\base\BaseObject {
             $resExpire = $obB24App->isAccessTokenExpire();
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
+            // cnLog::Add('Access-expired exception error: '. $error);
+            Yii::warning('Access-expired exception error: ' . $error, 'b24Tools');
         }
         if ($resExpire) {
+            // cnLog::Add('Access - expired');
             Yii::warning('Access - expired', 'b24Tools');
+
+            $obB24App->setRedirectUri('https://oauth.bitrix.info/rest/');
 
             try {
                 $result = $obB24App->getNewAccessToken();
             } catch (\Exception $e) {
                 $errorMessage = $e->getMessage();
+                //\cnLog::Add('getNewAccessToken exception error: '. $error);
+                Yii::warning('getNewAccessToken exception error: ' . $error, 'b24Tools');
             }
 
             if ($result === false) {
@@ -226,6 +249,7 @@ class b24Tools extends \yii\base\BaseObject {
                 $arAccessData['access_token'] = $result['access_token'];
                 $obB24App->setRefreshToken($arAccessData['refresh_token']);
                 $obB24App->setAccessToken($arAccessData['access_token']);
+                // \cnLog::Add('Access - refreshed');
                 $this->updateAuthToDB($this->arAccessParams);
                 //Yii::warning('Access - refreshed', 'b24Tools');
                 $btokenRefreshed = true;
@@ -238,46 +262,91 @@ class b24Tools extends \yii\base\BaseObject {
         return $obB24App;
     }
 
-    /** 
-    * Связь приложения и битрикса
-    * Проверяет токены и обновляет, если токен устаревший
-    * @param string $applicationId Код приложения
-    * @param string $applicationSecret Ключ приложения
-    * @param string $tableName Название таблицы (может быть не указано)
-    * @param string $domain Название портала (может быть не указано)
-    * @param array $arScope массив области действия приложения (может быть не задан)
-    * @param array $autch Информация об аутентификации
-    * @return Объект приложения, связанного с битриксом
-    */
-    public function connect($applicationId, $applicationSecret, $tableName = '', $domain = null, $arScope = array(), $autch = null) {//Связь с БД
-        $this->applicationId = $applicationId;//Устанавливаем данные у данного объекта
+    /**
+     * @param $applicationId
+     * @param $applicationSecret
+     * @param string $tableName
+     * @param null $domain
+     * @param array $arScope
+     * @param null $autch
+     * @return false
+     * @throws \yii\db\Exception
+     */
+    public function connect($applicationId, $applicationSecret, $tableName = '', $domain = null, $arScope = array(), $autch = null) {
+        $this->applicationId = $applicationId;
         $this->applicationSecret = $applicationSecret;
         $this->b24PortalTable = $tableName;
-        if ($autch === null) {//Если аутентификации не было
+        if ($autch === null) {
             $res = $this->getAuthFromDB($domain); //Нужно добавить проверку res             
             if (!$res) {
                 Yii::error('getAuthFromDB(' . $domain . ')=false');
                 return false;
             }
 
-            $this->arAccessParams = $this->prepareFromDB($res);//устанавливаем $arAccessParams в удобоваримый для БД вид 
+            $this->arAccessParams = $this->prepareFromDB($res);
         } else {
             $this->arAccessParams = $autch;
         }
-        $this->b24_error = $this->checkB24Auth($arScope);//Проверка на аутентификацию приложения у битрикса
+        $this->b24_error = $this->checkB24Auth($arScope);
         if ($this->b24_error != '') {
-            Yii::error('DB auth error: ' . $this->b24_error);//Вывод в логе БД
+            Yii::error('DB auth error: ' . $this->b24_error);
             return false;
         }
         return $this->arB24App;
     }
 
-    public static function toBool($data) {//Преобразование в битриксовскую логическую переменную
-        return $data?'Y':'N';
+    /**
+     * @param $auth
+     * @return false
+     * @throws \yii\db\Exception
+     */
+    public function connectFromUser($auth){
+        $b24App =$this->connect(
+            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), null, B24ConnectSettings::getParametrByName('b24PortalName'), null, $auth
+        );
+        return $b24App;
     }
-    
-    public static function boolToInt($data) {       
-        return $data=='Y'?1:0;
+
+    /**
+     * @return false
+     * @throws \yii\db\Exception
+     */
+    public function connectFromAdmin(){
+        $b24App = $this->connect(
+            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), B24ConnectSettings::getParametrByName('b24PortalTable'), B24ConnectSettings::getParametrByName('b24PortalName'));
+        return $b24App;
     }
-    
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public static function toBool($data) {
+        return $data ? 'Y' : 'N';
+    }
+
+    /**
+     * @param $data
+     * @return bool
+     * @throws HttpException
+     */
+    public static function isEventOnline($data) {
+        if (!ArrayHelper::keyExists('offline', $data, false)) {
+            throw new HttpException(404, 'Data "offline" not found');
+        }
+        return !(bool) ArrayHelper::getValue($data, 'offline');
+    }
+
+    /**
+     * @param $data
+     * @return bool
+     * @throws HttpException
+     */
+    public static function isEventOffline($data) {
+        if (!ArrayHelper::keyExists('offline', $data, false)) {
+            throw new HttpException(404, 'Data "offline" not found');
+        }
+        return (bool) ArrayHelper::getValue($data, 'offline');
+    }
+
 }
