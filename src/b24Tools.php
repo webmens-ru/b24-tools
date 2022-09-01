@@ -64,6 +64,7 @@ class b24Tools extends \yii\base\BaseObject {
     }
 
     /**
+     * Добавление авторизационных данных в таблибу БД
      * @param $tableName
      * @param $auth
      * @return int
@@ -85,6 +86,7 @@ class b24Tools extends \yii\base\BaseObject {
     }
 
     /**
+     * Обновление авторизационных данных в БД
      * @param $auth
      * @return int
      * @throws \yii\db\Exception
@@ -119,6 +121,7 @@ class b24Tools extends \yii\base\BaseObject {
     }
 
     /**
+     * Разбор данных полученных от Битрикс24 в виде AJAX запроса
      * @param $arRequest
      * @return array
      */
@@ -133,6 +136,7 @@ class b24Tools extends \yii\base\BaseObject {
     }
 
     /**
+     * Разбор данных полученных от Битрикс24
      * @param $arRequest
      * @return array
      */
@@ -165,6 +169,7 @@ class b24Tools extends \yii\base\BaseObject {
     }
 
     /**
+     * Проверка Авторизационных данных
      * @param array $arScope
      * @return bool
      * @throws \yii\db\Exception
@@ -201,7 +206,7 @@ class b24Tools extends \yii\base\BaseObject {
      */
     private function getBitrix24(&$arAccessData, &$btokenRefreshed, &$errorMessage, $arScope = array()) {
         $log = new Logger('bitrix24');
-        $log->pushHandler(new StreamHandler('log/b24/' . date('Y_m_d') . '.log', Logger::DEBUG));
+        $log->pushHandler(new StreamHandler('../log/b24/' . date('Y_m_d') . '.log', Logger::DEBUG));
 
         $btokenRefreshed = null;
 
@@ -263,6 +268,7 @@ class b24Tools extends \yii\base\BaseObject {
     }
 
     /**
+     * Соединение с Битрикс24
      * @param $applicationId
      * @param $applicationSecret
      * @param string $tableName
