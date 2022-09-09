@@ -206,7 +206,7 @@ class b24Tools extends \yii\base\BaseObject {
      */
     private function getBitrix24(&$arAccessData, &$btokenRefreshed, &$errorMessage, $arScope = array()) {
         $log = new Logger('bitrix24');
-        $log->pushHandler(new StreamHandler('../log/b24/' . date('Y_m_d') . '.log', Logger::DEBUG));
+        $log->pushHandler(new StreamHandler('log/b24/' . date('Y_m_d') . '.log', Logger::DEBUG));
 
         $btokenRefreshed = null;
 
