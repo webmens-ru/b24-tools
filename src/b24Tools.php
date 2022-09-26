@@ -243,10 +243,8 @@ class b24Tools extends \yii\base\BaseObject {
                 $result = $obB24App->getNewAccessToken();
             } catch (\Exception $e) {
                 $errorMessage = $e->getMessage();
-                //\cnLog::Add('getNewAccessToken exception error: '. $error);
-                Yii::warning('getNewAccessToken exception error: ' . $error, 'b24Tools');
+                Yii::warning('getNewAccessToken exception error: ' . $errorMessage, 'b24Tools');
             }
-
             if ($result === false) {
                 $errorMessage = 'access denied';
             } elseif (is_array($result) && array_key_exists('access_token', $result) && !empty($result['access_token'])) {
@@ -256,7 +254,7 @@ class b24Tools extends \yii\base\BaseObject {
                 $obB24App->setAccessToken($arAccessData['access_token']);
                 // \cnLog::Add('Access - refreshed');
                 $this->updateAuthToDB($this->arAccessParams);
-                //Yii::warning('Access - refreshed', 'b24Tools');
+                Yii::warning('Access - refreshed', 'b24Tools');
                 $btokenRefreshed = true;
             } else {
                 $btokenRefreshed = false;
