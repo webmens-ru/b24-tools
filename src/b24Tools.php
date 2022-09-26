@@ -221,7 +221,6 @@ class b24Tools extends \yii\base\BaseObject {
         $obB24App->setApplicationId($this->applicationId);
         $obB24App->setApplicationSecret($this->applicationSecret);
 
-        // set user-specific settings
         $obB24App->setDomain($arAccessData['domain']);
         $obB24App->setMemberId($arAccessData['member_id']);
         $obB24App->setRefreshToken($arAccessData['refresh_token']);
@@ -231,12 +230,10 @@ class b24Tools extends \yii\base\BaseObject {
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
             // cnLog::Add('Access-expired exception error: '. $error);
-            Yii::warning('Access-expired exception error: ' . $error, 'b24Tools');
+            Yii::warning('Access-expired exception error: ' . $errorMessage, 'b24Tools');
         }
         if ($resExpire) {
-            // cnLog::Add('Access - expired');
             Yii::warning('Access - expired', 'b24Tools');
-
             $obB24App->setRedirectUri('https://oauth.bitrix.info/rest/');
 
             try {
@@ -252,7 +249,6 @@ class b24Tools extends \yii\base\BaseObject {
                 $arAccessData['access_token'] = $result['access_token'];
                 $obB24App->setRefreshToken($arAccessData['refresh_token']);
                 $obB24App->setAccessToken($arAccessData['access_token']);
-                // \cnLog::Add('Access - refreshed');
                 $this->updateAuthToDB($this->arAccessParams);
                 Yii::warning('Access - refreshed', 'b24Tools');
                 $btokenRefreshed = true;
