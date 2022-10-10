@@ -179,7 +179,7 @@ class b24Tools extends \yii\base\BaseObject {
         if (!is_array($arScope)) {
             $arScope = array();
         }
-        if (!in_array('user', $arScope)) {
+        if (!in_array('user', $arScope)) {//TODO Есть ли доступ к user
             $arScope[] = 'user';
         }
 
@@ -225,6 +225,10 @@ class b24Tools extends \yii\base\BaseObject {
         $obB24App->setMemberId($arAccessData['member_id']);
         $obB24App->setRefreshToken($arAccessData['refresh_token']);
         $obB24App->setAccessToken($arAccessData['access_token']);
+//        $obB24App->setOnPortalRenamed(function($obB24, $newPortalName){
+//
+//        });
+
         try {
             $resExpire = $obB24App->isAccessTokenExpire();
         } catch (\Exception $e) {
@@ -277,7 +281,7 @@ class b24Tools extends \yii\base\BaseObject {
         $this->applicationSecret = $applicationSecret;
         $this->b24PortalTable = $tableName;
         if ($autch === null) {
-            $res = $this->getAuthFromDB($domain); //Нужно добавить проверку res             
+            $res = $this->getAuthFromDB($domain); //Нужно добавить проверку res
             if (!$res) {
                 Yii::error('getAuthFromDB(' . $domain . ')=false');
                 return false;
@@ -311,9 +315,9 @@ class b24Tools extends \yii\base\BaseObject {
      * @return false
      * @throws \yii\db\Exception
      */
-    public function connectFromAdmin(){
+    public function connectFromAdmin($b24PortalName){
         $b24App = $this->connect(
-            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), B24ConnectSettings::getParametrByName('b24PortalTable'), B24ConnectSettings::getParametrByName('b24PortalName'));
+            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), $b24PortalName, B24ConnectSettings::getParametrByName('b24PortalName'));
         return $b24App;
     }
 
