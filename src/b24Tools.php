@@ -2,7 +2,6 @@
 
 namespace wm\b24tools;
 
-use wm\admin\models\B24ConnectSettings;
 use yii\base\BaseObject;
 use Yii;
 use Monolog\Logger;
@@ -179,7 +178,7 @@ class b24Tools extends \yii\base\BaseObject {
         if (!is_array($arScope)) {
             $arScope = array();
         }
-        if (!in_array('user', $arScope)) {//TODO Есть ли доступ к user
+        if (!in_array('user', $arScope)) {
             $arScope[] = 'user';
         }
 
@@ -221,31 +220,32 @@ class b24Tools extends \yii\base\BaseObject {
         $obB24App->setApplicationId($this->applicationId);
         $obB24App->setApplicationSecret($this->applicationSecret);
 
+        // set user-specific settings
         $obB24App->setDomain($arAccessData['domain']);
         $obB24App->setMemberId($arAccessData['member_id']);
         $obB24App->setRefreshToken($arAccessData['refresh_token']);
         $obB24App->setAccessToken($arAccessData['access_token']);
-//        $obB24App->setOnPortalRenamed(function($obB24, $newPortalName){
-//
-//        });
-
         try {
             $resExpire = $obB24App->isAccessTokenExpire();
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
             // cnLog::Add('Access-expired exception error: '. $error);
-            Yii::warning('Access-expired exception error: ' . $errorMessage, 'b24Tools');
+            Yii::warning('Access-expired exception error: ' . $error, 'b24Tools');
         }
         if ($resExpire) {
+            // cnLog::Add('Access - expired');
             Yii::warning('Access - expired', 'b24Tools');
+
             $obB24App->setRedirectUri('https://oauth.bitrix.info/rest/');
 
             try {
                 $result = $obB24App->getNewAccessToken();
             } catch (\Exception $e) {
                 $errorMessage = $e->getMessage();
-                Yii::warning('getNewAccessToken exception error: ' . $errorMessage, 'b24Tools');
+                //\cnLog::Add('getNewAccessToken exception error: '. $error);
+                Yii::warning('getNewAccessToken exception error: ' . $error, 'b24Tools');
             }
+
             if ($result === false) {
                 $errorMessage = 'access denied';
             } elseif (is_array($result) && array_key_exists('access_token', $result) && !empty($result['access_token'])) {
@@ -253,8 +253,9 @@ class b24Tools extends \yii\base\BaseObject {
                 $arAccessData['access_token'] = $result['access_token'];
                 $obB24App->setRefreshToken($arAccessData['refresh_token']);
                 $obB24App->setAccessToken($arAccessData['access_token']);
+                // \cnLog::Add('Access - refreshed');
                 $this->updateAuthToDB($this->arAccessParams);
-                Yii::warning('Access - refreshed', 'b24Tools');
+                //Yii::warning('Access - refreshed', 'b24Tools');
                 $btokenRefreshed = true;
             } else {
                 $btokenRefreshed = false;
@@ -281,7 +282,7 @@ class b24Tools extends \yii\base\BaseObject {
         $this->applicationSecret = $applicationSecret;
         $this->b24PortalTable = $tableName;
         if ($autch === null) {
-            $res = $this->getAuthFromDB($domain); //Нужно добавить проверку res
+            $res = $this->getAuthFromDB($domain); //Нужно добавить проверку res             
             if (!$res) {
                 Yii::error('getAuthFromDB(' . $domain . ')=false');
                 return false;
@@ -306,7 +307,12 @@ class b24Tools extends \yii\base\BaseObject {
      */
     public function connectFromUser($auth){
         $b24App =$this->connect(
-            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), null, $auth['domain'], null, $auth
+            Yii::$app->params['applicationId'],
+            Yii::$app->params['applicationSecret'],
+            null,
+            $auth['domain'],
+            null,
+            $auth
         );
         return $b24App;
     }
@@ -317,7 +323,10 @@ class b24Tools extends \yii\base\BaseObject {
      */
     public function connectFromAdmin($b24PortalName){
         $b24App = $this->connect(
-            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), $b24PortalName, B24ConnectSettings::getParametrByName('b24PortalName'));
+            Yii::$app->params['applicationId'],
+            Yii::$app->params['applicationSecret'],
+            Yii::$app->params['b24PortalTable'],
+            $b24PortalName);
         return $b24App;
     }
 
