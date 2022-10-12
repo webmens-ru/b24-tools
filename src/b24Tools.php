@@ -230,7 +230,7 @@ class b24Tools extends \yii\base\BaseObject
         if ($isTokenRefreshed and $this->b24PortalTable) {
             $this->updateAuthToDB($this->arAccessParams);
         }
-        return $this->b24_error === true;
+        return $this->b24_error;
     }
 
     /**
