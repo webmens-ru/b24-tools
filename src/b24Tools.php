@@ -230,21 +230,17 @@ class b24Tools extends \yii\base\BaseObject {
             $resExpire = $obB24App->isAccessTokenExpire();
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
-            // cnLog::Add('Access-expired exception error: '. $error);
-            Yii::warning('Access-expired exception error: ' . $error, 'b24Tools');
+            Yii::warning('Access-expired exception error: ' . $errorMessage, 'b24Tools');
         }
         if ($resExpire) {
-            // cnLog::Add('Access - expired');
             Yii::warning('Access - expired', 'b24Tools');
-
             $obB24App->setRedirectUri('https://oauth.bitrix.info/rest/');
 
             try {
                 $result = $obB24App->getNewAccessToken();
             } catch (\Exception $e) {
                 $errorMessage = $e->getMessage();
-                //\cnLog::Add('getNewAccessToken exception error: '. $error);
-                Yii::warning('getNewAccessToken exception error: ' . $error, 'b24Tools');
+                Yii::warning('getNewAccessToken exception error: ' . $errorMessage, 'b24Tools');
             }
 
             if ($result === false) {
