@@ -304,7 +304,7 @@ class b24Tools extends \yii\base\BaseObject {
      */
     public function connectFromUser($auth){
         $b24App =$this->connect(
-            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), null, B24ConnectSettings::getParametrByName('b24PortalName'), null, $auth
+            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), null, $auth['domain'], null, $auth
         );
         return $b24App;
     }
