@@ -5,6 +5,7 @@ namespace wm\b24tools;
 use wm\admin\models\B24ConnectSettings;
 use yii\base\BaseObject;
 use Yii;
+use wm\admin\models\User;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use yii\helpers\ArrayHelper;
@@ -314,8 +315,10 @@ class b24Tools extends \yii\base\BaseObject {
      * @throws \yii\db\Exception
      */
     public function connectFromAdmin(){
+        $userId = \Yii::$app->user->id;
+        $portalName = User::getPortalName($userId);
         $b24App = $this->connect(
-            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), B24ConnectSettings::getParametrByName('b24PortalTable'), B24ConnectSettings::getParametrByName('b24PortalName'));
+            B24ConnectSettings::getParametrByName('applicationId'), B24ConnectSettings::getParametrByName('applicationSecret'), B24ConnectSettings::getParametrByName('b24PortalTable'), $portalName);
         return $b24App;
     }
 
