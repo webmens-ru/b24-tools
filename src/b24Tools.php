@@ -249,7 +249,6 @@ class b24Tools extends \yii\base\BaseObject
     private function getBitrix24(&$arAccessData, &$btokenRefreshed, &$errorMessage, $arScope = array(), $onPortalRenamed = null)
     {
         $log = new Logger('bitrix24');
-        $log = new Logger('bitrix24');
         $loggerStream = '../log/' . date('Y_m_d') . '/' . $arAccessData['domain'] . '.log';
         $isLoggingInfo = in_array($arAccessData['domain'], Yii::$app->params['extendedLoggerPortal']);
         $loggerLevel = ($isLoggingInfo) ? Logger::INFO : Logger::DEBUG;
