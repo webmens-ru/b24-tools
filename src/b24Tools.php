@@ -57,6 +57,9 @@ class b24Tools extends \yii\base\BaseObject
 //        parent::__construct($config);
 //    }
 
+    /**
+     * @param $onPortalRenamed
+     */
     public function setOnPortalRenamed($onPortalRenamed)
     {
         $this->onPortalRenamed = $onPortalRenamed;
@@ -365,14 +368,17 @@ class b24Tools extends \yii\base\BaseObject
         return $b24App;
     }
 
+
     /**
+     * @param string $portalName
      * @return false
-     * @throws \yii\db\Exception
      */
-    public function connectFromAdmin()
+    public function connectFromAdmin($portalName = '')
     {
-        $userId = \Yii::$app->user->id;
-        $portalName = User::getPortalName($userId);
+        if (!$portalName && !$portalName = Yii::$app->params['portalName']) {
+            $userId = \Yii::$app->user->id;
+            $portalName = User::getPortalName($userId);
+        }
         $b24App = $this->connect(
             Yii::$app->params['applicationId'],
             Yii::$app->params['applicationSecret'],
