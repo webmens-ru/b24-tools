@@ -252,7 +252,13 @@ class b24Tools extends \yii\base\BaseObject
     private function getBitrix24(&$arAccessData, &$btokenRefreshed, &$errorMessage, $arScope = array(), $onPortalRenamed = null)
     {
         $log = new Logger('bitrix24');
-        $loggerStream = '../log/' . date('Y_m_d') . '/' . $arAccessData['domain'] . '.log';
+        if (Yii::$app->params['logPath']) {
+            $baseLogPath = Yii::$app->params['logPath'];
+        } else {
+            $baseLogPath = '../log/';
+            Yii::error('В params не найден параметр logPath');
+        }
+        $loggerStream = $baseLogPath . date('Y_m_d') . '/' . $arAccessData['domain'] . '.log';
         $isLoggingInfo = in_array($arAccessData['domain'], Yii::$app->params['extendedLoggerPortal']);
         $loggerLevel = ($isLoggingInfo) ? Logger::INFO : Logger::DEBUG;
         $log->pushHandler(new StreamHandler($loggerStream, $loggerLevel));
