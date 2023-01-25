@@ -2,6 +2,7 @@
 
 namespace wm\b24tools;
 
+use Bitrix24\Bitrix24;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use wm\admin\models\User;
@@ -58,11 +59,25 @@ class b24Tools extends \yii\base\BaseObject
 //    }
 
     /**
-     * @param $onPortalRenamed
+     * @param Bitrix24 $obB24
+     * @param string $newPortalName
      */
-    public function setOnPortalRenamed($onPortalRenamed)
+    public static function setOnPortalRenamed($obB24, $newPortalName)
     {
-        $this->onPortalRenamed = $onPortalRenamed;
+        if ($obB24->getDomain() != $newPortalName) {
+            Yii::$app->db
+                ->createCommand()
+                ->update(Yii::$app->params['b24PortalTable'],
+                    [
+                        'PORTAL' => $newPortalName
+                    ],
+                    [
+                        'PORTAL' => $obB24->getDomain(),
+                        'MEMBER_ID' => $obB24->getMemberId(),
+                    ]
+                )
+                ->execute();
+        }
     }
 
     /**
@@ -275,10 +290,7 @@ class b24Tools extends \yii\base\BaseObject
         $obB24App->setApplicationScope($arScope);
         $obB24App->setApplicationId($this->applicationId);
         $obB24App->setApplicationSecret($this->applicationSecret);
-        if ($onPortalRenamed)
-        {
-            $obB24App->setOnPortalRenamed($onPortalRenamed);
-        }
+        $obB24App->setOnPortalRenamed(['\wm\b24tools\b24Tools', 'setOnPortalRenamed']);
 
         // set user-specific settings
         $obB24App->setDomain($arAccessData['domain']);
