@@ -49,16 +49,6 @@ class b24Tools extends \yii\base\BaseObject
     private $applicationSecret;
 
     /**
-     * @var
-     */
-    private $onPortalRenamed;
-
-//    public function __construct($config = array()) {
-//        $this->b24PortalTable = Yii::$app->params['b24PortalTable'];
-//        parent::__construct($config);
-//    }
-
-    /**
      * @param Bitrix24 $obB24
      * @param string $newPortalName
      */
@@ -246,9 +236,15 @@ class b24Tools extends \yii\base\BaseObject
         // проверяем актуальность доступа
         $isTokenRefreshed = false;
 
-        // $arAccessParams['access_token'] = '123';
-        // $arAccessParams['refresh_token'] = '333';
-        $this->arB24App = $this->getBitrix24($this->arAccessParams, $isTokenRefreshed, $this->b24_error, $arScope, $this->onPortalRenamed);
+        $this->arB24App = $this->getBitrix24(
+            $this->arAccessParams,
+            $isTokenRefreshed,
+            $this->b24_error, $arScope,
+            [
+                '\wm\b24tools\b24Tools',
+                'setOnPortalRenamed'
+            ]
+        );
         if ($isTokenRefreshed and $this->b24PortalTable) {
             $this->updateAuthToDB($this->arAccessParams);
         }
@@ -264,7 +260,13 @@ class b24Tools extends \yii\base\BaseObject
      * @throws \Bitrix24\Exceptions\Bitrix24Exception
      * @throws \yii\db\Exception
      */
-    private function getBitrix24(&$arAccessData, &$btokenRefreshed, &$errorMessage, $arScope = array(), $onPortalRenamed = null)
+    private function getBitrix24(
+        &$arAccessData,
+        &$btokenRefreshed,
+        &$errorMessage,
+        $arScope = array(),
+        $onPortalRenamed = null
+    )
     {
         $log = new Logger('bitrix24');
         if (Yii::$app->params['logPath']) {
