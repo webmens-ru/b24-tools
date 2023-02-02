@@ -344,7 +344,7 @@ class b24Tools extends \yii\base\BaseObject
      * @param null $domain
      * @param array $arScope
      * @param null $autch
-     * @return false
+     * @return false|\Bitrix24\Bitrix24
      * @throws \yii\db\Exception
      */
     public function connect($applicationId, $applicationSecret, $tableName = '', $domain = null, $arScope = array(), $autch = null)
@@ -373,7 +373,7 @@ class b24Tools extends \yii\base\BaseObject
 
     /**
      * @param $auth
-     * @return false
+     * @return false|\Bitrix24\Bitrix24
      * @throws \yii\db\Exception
      */
     public function connectFromUser($auth)
@@ -391,7 +391,7 @@ class b24Tools extends \yii\base\BaseObject
 
     /**
      * @param string $portalName
-     * @return false
+     * @return false|\Bitrix24\Bitrix24
      */
     public function connectFromAdmin($portalName = '')
     {
