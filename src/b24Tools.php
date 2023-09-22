@@ -300,7 +300,7 @@ class b24Tools extends \yii\base\BaseObject
         $obB24App->setRefreshToken($arAccessData['refresh_token']);
         $obB24App->setAccessToken($arAccessData['access_token']);
         $obB24App->setOnExpiredToken(
-            function (&$objB24) {
+            function ($objB24) {
                 $objB24->setRedirectUri('https://oauth.bitrix.info/rest/');
                 try {
                     $result = $objB24->getNewAccessToken();
