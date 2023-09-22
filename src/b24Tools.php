@@ -299,6 +299,27 @@ class b24Tools extends \yii\base\BaseObject
         $obB24App->setMemberId($arAccessData['member_id']);
         $obB24App->setRefreshToken($arAccessData['refresh_token']);
         $obB24App->setAccessToken($arAccessData['access_token']);
+        $obB24App->setOnExpiredToken(
+            function (&$objB24) {
+                $objB24->setRedirectUri('https://oauth.bitrix.info/rest/');
+                try {
+                    $result = $objB24->getNewAccessToken();
+                } catch (\Exception $e) {
+                    $errorMessage = $e->getMessage();
+                    Yii::warning('getNewAccessToken exception error: ' . $errorMessage, 'b24Tools');
+                }
+
+                if (ArrayHelper::getValue($result, 'access_token')) {
+                    $arAccessData['refresh_token'] = $result['refresh_token'];
+                    $arAccessData['access_token'] = $result['access_token'];
+                    $objB24->setRefreshToken($arAccessData['refresh_token']);
+                    $objB24->setAccessToken($arAccessData['access_token']);
+                    $this->updateAuthToDB($this->arAccessParams);
+                    return true;
+                }
+                return false;
+            }
+        );
         try {
             $resExpire = $obB24App->isAccessTokenExpire();
         } catch (\Exception $e) {
