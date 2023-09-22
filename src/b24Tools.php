@@ -135,12 +135,12 @@ class b24Tools extends \yii\base\BaseObject
      * @return int
      * @throws \yii\db\Exception
      */
-    public function updateAuthToDB($auth)
+    public static function updateAuthToDB($auth, $b24PortalTable)
     {
-        if ($this->b24PortalTable) {
+        if ($b24PortalTable) {
             $res = Yii::$app->db
                 ->createCommand()
-                ->update($this->b24PortalTable, [
+                ->update($b24PortalTable, [
                     'ACCESS_TOKEN' => $auth['access_token'],
                     'REFRESH_TOKEN' => $auth['refresh_token'],
                     'DATE' => date("Y-m-d"),
@@ -246,7 +246,7 @@ class b24Tools extends \yii\base\BaseObject
             ]
         );
         if ($isTokenRefreshed and $this->b24PortalTable) {
-            $this->updateAuthToDB($this->arAccessParams);
+            self::updateAuthToDB($this->arAccessParams, $this->b24PortalTable);
         }
         return $this->b24_error === true;
     }
@@ -299,8 +299,9 @@ class b24Tools extends \yii\base\BaseObject
         $obB24App->setMemberId($arAccessData['member_id']);
         $obB24App->setRefreshToken($arAccessData['refresh_token']);
         $obB24App->setAccessToken($arAccessData['access_token']);
+        $b24PortalTable = $this->b24PortalTable;
         $obB24App->setOnExpiredToken(
-            function ($objB24) {
+            function ($objB24) use ($b24PortalTable) {
                 $objB24->setRedirectUri('https://oauth.bitrix.info/rest/');
                 try {
                     $result = $objB24->getNewAccessToken();
@@ -314,7 +315,7 @@ class b24Tools extends \yii\base\BaseObject
                     $arAccessData['access_token'] = $result['access_token'];
                     $objB24->setRefreshToken($arAccessData['refresh_token']);
                     $objB24->setAccessToken($arAccessData['access_token']);
-                    $this->updateAuthToDB($this->arAccessParams);
+                    self::updateAuthToDB($this->arAccessParams, $b24PortalTable);
                     return true;
                 }
                 return false;
@@ -344,9 +345,7 @@ class b24Tools extends \yii\base\BaseObject
                 $arAccessData['access_token'] = $result['access_token'];
                 $obB24App->setRefreshToken($arAccessData['refresh_token']);
                 $obB24App->setAccessToken($arAccessData['access_token']);
-                // \cnLog::Add('Access - refreshed');
-                $this->updateAuthToDB($this->arAccessParams);
-                //Yii::warning('Access - refreshed', 'b24Tools');
+                self::updateAuthToDB($this->arAccessParams, $this->b24PortalTable);
                 $btokenRefreshed = true;
             } else {
                 $btokenRefreshed = false;
@@ -408,7 +407,6 @@ class b24Tools extends \yii\base\BaseObject
         );
         return $b24App;
     }
-
 
     /**
      * @param string $portalName
