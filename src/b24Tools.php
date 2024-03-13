@@ -394,7 +394,7 @@ class b24Tools extends \yii\base\BaseObject
 
     /**
      * @param $auth
-     * @return false|\Bitrix24\Bitrix24
+     * @return \Bitrix24\Bitrix24
      * @throws \yii\db\Exception
      */
     public function connectFromUser($auth)
@@ -406,6 +406,9 @@ class b24Tools extends \yii\base\BaseObject
             $auth['domain'],
             null, $auth
         );
+        if(!$b24App){
+            throw new Exception('!$b24App');
+        }
         return $b24App;
     }
 
