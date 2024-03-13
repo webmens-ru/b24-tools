@@ -8,6 +8,7 @@ use Monolog\Logger;
 use wm\admin\models\User;
 use Yii;
 use yii\base\BaseObject;
+use yii\base\Exception;
 use yii\helpers\ArrayHelper;
 use yii\web\HttpException;
 
@@ -199,8 +200,8 @@ class b24Tools extends \yii\base\BaseObject
     }
 
     /**
-     * @param null $arRequestPost
-     * @param null $arRequestGet
+     * @param null|mixed|array $arRequestPost
+     * @param null|mixed|array  $arRequestGet
      * @return array
      */
     public function prepareFromRequest($arRequestPost = null, $arRequestGet = null)
@@ -373,7 +374,7 @@ class b24Tools extends \yii\base\BaseObject
         $this->applicationSecret = $applicationSecret;
         $this->b24PortalTable = $tableName;
         if ($autch === null) {
-            $res = $this->getAuthFromDB($domain); //Нужно добавить проверку res             
+            $res = $this->getAuthFromDB($domain); //Нужно добавить проверку res
             if (!$res) {
                 Yii::error('getAuthFromDB(' . $domain . ')=false');
                 return false;
@@ -408,9 +409,12 @@ class b24Tools extends \yii\base\BaseObject
         return $b24App;
     }
 
+
     /**
-     * @param string $portalName
-     * @return false|\Bitrix24\Bitrix24
+     * @param $portalName
+     * @return Bitrix24
+     * @throws Exception
+     * @throws \yii\db\Exception
      */
     public function connectFromAdmin($portalName = '')
     {
@@ -423,6 +427,9 @@ class b24Tools extends \yii\base\BaseObject
             Yii::$app->params['applicationSecret'],
             Yii::$app->params['b24PortalTable'],
             $portalName);
+        if(!$b24App){
+            throw new Exception('!$b24App');
+        }
         return $b24App;
     }
 
